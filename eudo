@@ -25,8 +25,7 @@ $ANSI_BLUE######  #    #  #    #  #    #$ANSI_RESET
 $ANSI_CYAN#       #    #  #    #  #    #$ANSI_RESET
 $ANSI_BLUE######   ####   #####    #### $ANSI_RESET"
   echo 'Erstaz User Do.'
-  echo "Usage: $0 <string>"
-  echo 'No options are interpreted; all is the command.'
+  echo "Usage: $0 <string> [ -u <username> ]"
   exit
 fi
 
