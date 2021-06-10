@@ -1,0 +1,45 @@
+#! /bin/bash
+
+#########################################################
+
+# EUDO: Ersatz User Do.
+# A wrapper for substitute user.
+# Directory completions are not available inside
+# quoted string in shells. This program is to provide
+# a one-time root access without sudo. This does away
+# with the quotes and other shenanigans involved when
+# using su -c.
+
+#########################################################
+
+
+# Pre-emptive checking.
+if [ $# -lt 1 ]; then
+  ANSI_BLUE='\x1b[34m'
+  ANSI_CYAN='\x1b[36m'
+  ANSI_RESET='\x1b[39m'
+  echo -e "\
+$ANSI_BLUE######  #    #  #####    #### $ANSI_RESET 
+$ANSI_CYAN#       #    #  #    #  #    #$ANSI_RESET
+$ANSI_BLUE######  #    #  #    #  #    #$ANSI_RESET
+$ANSI_CYAN#       #    #  #    #  #    #$ANSI_RESET
+$ANSI_BLUE######   ####   #####    #### $ANSI_RESET"
+  echo 'Erstaz User Do.'
+  echo "Usage: $0 <string>"
+  echo 'No options are interpreted; all is the command.'
+  exit
+fi
+
+# Parsing and passing the command.
+user=''
+cmd=''
+while [ $# -gt 0 ]; do
+  if [ $1 = '-u' ]; then
+    user=$2
+    shift; shift
+    continue
+  fi
+  cmd="$cmd $1"
+  shift
+done
+su $user -c "$cmd"

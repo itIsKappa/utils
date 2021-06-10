@@ -1,0 +1,85 @@
+#! /bin/python3
+
+# Imports.
+from sys import argv
+from os import rename
+from os.path import exists
+from getopt import gnu_getopt, GetoptError
+
+# Definition for colours.
+ANSI_RED = "\x1b[31m"
+ANSI_GREEN = "\x1b[32m"
+ANSI_YELLOW = "\x1b[33m"
+ANSI_RESET = "\x1b[39m"
+
+# Pre-emptive checking.
+if len(argv) < 2:
+    indent = ' ' * len(argv[0])
+    logo = f"{ANSI_YELLOW}##### ####  #   # ##### ####  #   # #   #\n"\
+                         "#     #   # ## ##   #   #   # ##  # ## ##\n"\
+                         "##### ####  # # #   #   ####  # # # # # #\n"\
+                        f"#     #   # #   #   #   #   # #  ## #   #{ANSI_RESET}"
+    print(logo, f"\nUsage: {argv[0]} [-d <delimeter> | --delimeter=<delimeter>]\n"\
+                  f"       {indent} [-s | --show ]")
+    print("\nNotes: \nHere delimeter refers to that which is to be replaced with.")
+    exit()
+
+# Definitions.
+delim = '-' # Default delimeter.
+bad_chars = [ # Characters to be replaced.
+    '(', ')',
+    '[', ']',
+    '{', '}',
+    ' ', '&',
+    '!', '$',
+    '*', '^',
+    ';', '=',
+    '~', '\'',
+    '"', '`',
+    '\\', '|',
+    '?', '<', '>'
+]
+def formatting(arg: str) -> str:
+    arg = list(arg)
+    for i in range(len(arg)):
+        if arg[i] in bad_chars: arg[i] = delim
+    return str().join(arg).strip(delim)
+
+# Option parsing.
+try: opts, arg = gnu_getopt(argv[1:], 'd:s', ["delimeter=", "show"])
+except GetoptError: exit(f"<{ANSI_RED}!{ANSI_RESET}> Error in parsing options.")
+if not opts == []:
+    for e in opts:
+        if e[0] == "-d" or e[0] == "--delimeter": delim = e[1]
+        elif e[0] == "-s" or e[0] == "--show":
+            exit(f"<{ANSI_GREEN}+{ANSI_RESET}> {str().join(bad_chars)}")
+
+# Formatting.
+for arg in arg:
+    src_arg = arg # Source copy of the argument.
+
+    if '/' in arg:
+        *dirs, arg = arg.split('/')
+        arg = formatting(arg)
+        arg = ('/').join(dirs) + '/' + arg
+    else: arg = formatting(arg)
+
+    # Renaming.
+    if exists(arg): # Checking filename coincidences.
+        consent = True if input(f"<{ANSI_RED}!{ANSI_RESET}> The formatted filename ('{src_arg}') coincides with another filename. Continue (yes/no)? ") == "yes" else False
+        if consent: print(f"<{ANSI_GREEN}+{ANSI_RESET}> Consent report: {ANSI_GREEN}Positive{ANSI_RESET}.")
+        else:
+            print(f"<{ANSI_GREEN}+{ANSI_RESET}> Consent report: {ANSI_RED}Negative{ANSI_RESET}.\n"\
+                  f"<{ANSI_RED}!{ANSI_RESET}> Abort.")
+            continue
+
+    try: rename(src_arg, arg)
+    except FileNotFoundError:
+        print(f"<{ANSI_RED}!{ANSI_RESET}> The file does not exist.")
+        continue
+
+    # Report for renaming.
+    print(f"<{ANSI_GREEN}+{ANSI_RESET}> {src_arg} {ANSI_YELLOW}->{ANSI_RESET} {arg}")
+
+# Adieu.
+exit()
