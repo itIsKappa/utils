@@ -65,12 +65,16 @@ for arg in arg:
     else: arg = formatting(arg)
 
     # Renaming.
-    if exists(arg): # Checking filename coincidences.
+    if src_arg == arg: # Checking for unchanged filenames.
+        print(f"<{ANSI_GREEN}+{ANSI_RESET}> No formatting could be done. Renaming skipped.")
+        continue
+
+    elif exists(arg): # Checking filename coincidences.
         consent = True if input(f"<{ANSI_RED}!{ANSI_RESET}> The formatted filename ('{src_arg}') coincides with another filename. Continue (yes/no)? ") == "yes" else False
         if consent: print(f"<{ANSI_GREEN}+{ANSI_RESET}> Consent report: {ANSI_GREEN}Positive{ANSI_RESET}.")
         else:
             print(f"<{ANSI_GREEN}+{ANSI_RESET}> Consent report: {ANSI_RED}Negative{ANSI_RESET}.\n"\
-                  f"<{ANSI_RED}!{ANSI_RESET}> Abort.")
+                  f"<{ANSI_RED}!{ANSI_RESET}> Renaming Skipped.")
             continue
 
     try: rename(src_arg, arg)
