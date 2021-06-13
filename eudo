@@ -12,7 +12,6 @@
 
 #########################################################
 
-
 # Pre-emptive checking.
 if [ $# -lt 1 ]; then
   ANSI_BLUE='\x1b[34m'
@@ -32,13 +31,20 @@ fi
 # Parsing and passing the command.
 user=''
 cmd=''
-while [ $# -gt 0 ]; do
+options=1
+
+while [ $options -eq 1 ]; do
   if [ $1 = '-u' ]; then
     user=$2
     shift; shift
-    continue
+    options=0
+  else options=0
   fi
-  cmd="$cmd $1"
+done
+
+while [ $# -gt 0 ]; do
+  cmd="$cmd$1 "
   shift
 done
+
 su $user -c "$cmd"
