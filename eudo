@@ -12,8 +12,8 @@
 
 #########################################################
 
-# Pre-emptive checking.
-if [ $# -lt 1 ]; then
+# Help.
+function display_help {
   ANSI_BLUE='\x1b[34m'
   ANSI_CYAN='\x1b[36m'
   ANSI_RESET='\x1b[39m'
@@ -24,8 +24,13 @@ $ANSI_BLUE######  #    #  #    #  #    #$ANSI_RESET
 $ANSI_CYAN#       #    #  #    #  #    #$ANSI_RESET
 $ANSI_BLUE######   ####   #####    #### $ANSI_RESET"
   echo 'Erstaz User Do.'
-  echo "Usage: $0 <string> [ -u <username> ]"
+  echo "Usage: $0 [-u <username> | --user <username>] <command/string>"
+  echo "       $0 [-h | --help]"
   exit
+}
+
+# Pre-emptive checking.
+if [ $# -lt 1 ]; then display_help
 fi
 
 # Parsing and passing the command.
@@ -34,10 +39,12 @@ cmd=''
 options=1
 
 while [ $options -eq 1 ]; do
-  if [ $1 = '-u' ]; then
+  if [ $1 = '-u' ] || [ $1 = '--user' ]; then
     user=$2
     shift; shift
     options=0
+  elif [ $1 = '-h' ] || [ $1 = '--help' ]; then
+    display_help
   else options=0
   fi
 done

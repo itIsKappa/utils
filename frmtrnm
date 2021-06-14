@@ -12,17 +12,22 @@ ANSI_GREEN = "\x1b[32m"
 ANSI_YELLOW = "\x1b[33m"
 ANSI_RESET = "\x1b[39m"
 
-# Pre-emptive checking.
-if len(argv) < 2:
+# Help.
+def __help__() -> None:
     indent = ' ' * len(argv[0])
     logo = f"{ANSI_YELLOW}##### ####  #   # ##### ####  #   # #   #\n"\
                          "#     #   # ## ##   #   #   # ##  # ## ##\n"\
                          "##### ####  # # #   #   ####  # # # # # #\n"\
                         f"#     #   # #   #   #   #   # #  ## #   #{ANSI_RESET}"
     print(logo, f"\nUsage: {argv[0]} [-d <delimeter> | --delimeter=<delimeter>]\n"\
-                  f"       {indent} [-s | --show ]")
+                  f"       {indent} [-s | --show ]\n"\
+                  f"       {indent} [-a <string of characters> | -add=<string of characters>]\n"\
+                  f"       {indent} [-h | --help]")
     print("\nNotes: \nHere delimeter refers to that which is to be replaced with.")
     exit()
+
+# Pre-emptive checking.
+if len(argv) < 2: __help__()
 
 # Definitions.
 delim = '-' # Default delimeter.
@@ -46,13 +51,15 @@ def formatting(arg: str) -> str:
     return str().join(arg).strip(delim)
 
 # Option parsing.
-try: opts, arg = gnu_getopt(argv[1:], 'd:s', ["delimeter=", "show"])
+try: opts, arg = gnu_getopt(argv[1:], 'd:sa:h', ["delimeter=", "show", "add=", "help"])
 except GetoptError: exit(f"<{ANSI_RED}!{ANSI_RESET}> Error in parsing options.")
 if not opts == []:
     for e in opts:
         if e[0] == "-d" or e[0] == "--delimeter": delim = e[1]
         elif e[0] == "-s" or e[0] == "--show":
             exit(f"<{ANSI_GREEN}+{ANSI_RESET}> {str().join(bad_chars)}")
+        elif e[0] == "-a" or e[0] == "--add": bad_chars.extend(list(e[1])) 
+        elif e[0] == "-h" or e[0] == "--help": __help__()
 
 # Formatting.
 for arg in arg:
