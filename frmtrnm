@@ -5,6 +5,7 @@ from sys import argv
 from os import rename
 from os.path import exists
 from getopt import gnu_getopt, GetoptError
+from typing import Set
 
 # Definition for colours.
 ANSI_RED = "\x1b[31m"
@@ -21,7 +22,7 @@ def __help__() -> None:
                         f"#     #   # #   #   #   #   # #  ## #   #{ANSI_RESET}"
     print(logo, f"\nUsage: {argv[0]} [-d <delimeter> | --delimeter=<delimeter>]\n"\
                   f"       {indent} [-s | --show ]\n"\
-                  f"       {indent} [-a <string of characters> | -add=<string of characters>]\n"\
+                  f"       {indent} [-a <string of characters> | --add=<string of characters>]\n"\
                   f"       {indent} [-h | --help]")
     print("\nNotes: \nHere delimeter refers to that which is to be replaced with.")
     exit()
@@ -31,7 +32,8 @@ if len(argv) < 2: __help__()
 
 # Definitions.
 delim = '-' # Default delimeter.
-bad_chars = [ # Characters to be replaced.
+bad_chars: Set[str] = {
+    # Characters to be replaced.
     '(', ')',
     '[', ']',
     '{', '}',
@@ -43,7 +45,7 @@ bad_chars = [ # Characters to be replaced.
     '"', '`',
     '\\', '|',
     '?', '<', '>'
-]
+}
 def formatting(arg: str) -> str:
     arg = list(arg)
     for i in range(len(arg)):
@@ -52,18 +54,24 @@ def formatting(arg: str) -> str:
 
 # Option parsing.
 try: opts, arg = gnu_getopt(argv[1:], 'd:sa:h', ["delimeter=", "show", "add=", "help"])
-except GetoptError: exit(f"<{ANSI_RED}!{ANSI_RESET}> Error in parsing options.")
+except GetoptError as getopt_error: exit(f"<{ANSI_RED}!{ANSI_RESET}> Invalid option: '{getopt_error.opt}'.")
 if not opts == []:
     for e in opts:
         if e[0] == "-d" or e[0] == "--delimeter": delim = e[1]
         elif e[0] == "-s" or e[0] == "--show":
             exit(f"<{ANSI_GREEN}+{ANSI_RESET}> {str().join(bad_chars)}")
-        elif e[0] == "-a" or e[0] == "--add": bad_chars.extend(list(e[1])) 
+        elif e[0] == "-a" or e[0] == "--add":
+            for c in e[1]:
+                bad_chars.add(c)
         elif e[0] == "-h" or e[0] == "--help": __help__()
 
 # Formatting.
+selected_cnt = 0 # The count of the selected files.
+renamed_cnt  = 0 # The count of the successfully renamed files.
+
 for arg in arg:
     src_arg = arg # Source copy of the argument.
+    selected_cnt += 1
 
     if '/' in arg:
         *dirs, arg = arg.split('/')
@@ -73,24 +81,33 @@ for arg in arg:
 
     # Renaming.
     if src_arg == arg: # Checking for unchanged filenames.
-        print(f"<{ANSI_GREEN}+{ANSI_RESET}> No formatting could be done. Renaming skipped.")
+        print(f"<{ANSI_GREEN}+{ANSI_RESET}> No formatting could be done ({src_arg}). Renaming skipped.")
         continue
-
     elif exists(arg): # Checking filename coincidences.
-        consent = True if input(f"<{ANSI_RED}!{ANSI_RESET}> The formatted filename ('{src_arg}') coincides with another filename. Continue (yes/no)? ") == "yes" else False
+        consent = True \
+                  if input(f"<{ANSI_RED}!{ANSI_RESET}> The formatted filename ('{src_arg}') coincides with another filename ('{arg}'). Continue (yes/no)? ") == "yes" \
+                  else False
         if consent: print(f"<{ANSI_GREEN}+{ANSI_RESET}> Consent report: {ANSI_GREEN}Positive{ANSI_RESET}.")
         else:
-            print(f"<{ANSI_GREEN}+{ANSI_RESET}> Consent report: {ANSI_RED}Negative{ANSI_RESET}.\n"\
-                  f"<{ANSI_RED}!{ANSI_RESET}> Renaming Skipped.")
+            print(f"<{ANSI_GREEN}+{ANSI_RESET}> Consent report: {ANSI_RED}Negative{ANSI_RESET}.\n" \
+                  f"<{ANSI_RED}!{ANSI_RESET}> Renaming skipped.")
             continue
 
-    try: rename(src_arg, arg)
+    try:
+        rename(src_arg, arg)
+        renamed_cnt += 1
     except FileNotFoundError:
         print(f"<{ANSI_RED}!{ANSI_RESET}> The file does not exist.")
         continue
 
     # Report for renaming.
     print(f"<{ANSI_GREEN}+{ANSI_RESET}> {src_arg} {ANSI_YELLOW}->{ANSI_RESET} {arg}")
+
+# Statistics.
+skipped_cnt = selected_cnt - renamed_cnt
+print(f"{selected_cnt} selected; " \
+      f"{ANSI_GREEN if renamed_cnt != 0 else ANSI_RESET}{renamed_cnt}{ANSI_RESET} renamed; " \
+      f"{ANSI_RED if skipped_cnt != 0 else ANSI_RESET}{skipped_cnt}{ANSI_RESET} skipped.")
 
 # Adieu.
 exit()
