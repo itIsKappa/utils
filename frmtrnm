@@ -14,21 +14,22 @@ ANSI_YELLOW = "\x1b[33m"
 ANSI_RESET = "\x1b[39m"
 
 # Help.
-def __help__() -> None:
+def help__() -> None:
     indent = ' ' * len(argv[0])
     logo = f"{ANSI_YELLOW}##### ####  #   # ##### ####  #   # #   #\n"\
                          "#     #   # ## ##   #   #   # ##  # ## ##\n"\
                          "##### ####  # # #   #   ####  # # # # # #\n"\
                         f"#     #   # #   #   #   #   # #  ## #   #{ANSI_RESET}"
-    print(logo, f"\nUsage: {argv[0]} [-d <delimeter> | --delimeter=<delimeter>]\n"\
-                  f"       {indent} [-s | --show ]\n"\
-                  f"       {indent} [-a <string of characters> | --add=<string of characters>]\n"\
-                  f"       {indent} [-h | --help]")
+    print(logo, f"\nUsage: {argv[0]} [-d <delimeter> | --delimeter=<delimeter>] Set the delimeter; the default is a hyphen.\n"\
+                  f"       {indent} [-s | --show ] Display the set of characters that will be replaced.\n"\
+                  f"       {indent} [-a <string of characters> | --add=<string of characters>] Add characters to be replaced to the set.\n"\
+                  f"       {indent} [-h | --help] Display this.\n"\
+                  f"       {indent} [-x | --ignore-extension] Ignores the file extension. By default, it is left untouched.")
     print("\nNotes: \nHere delimeter refers to that which is to be replaced with.")
     exit()
 
 # Pre-emptive checking.
-if len(argv) < 2: __help__()
+if len(argv) < 2: help__()
 
 # Definitions.
 delim = '-' # Default delimeter.
@@ -46,24 +47,43 @@ bad_chars: Set[str] = {
     '\\', '|',
     '?', '<', '>'
 }
+ign_ext = False # Ignore extension?
+
 def formatting(arg: str) -> str:
+    """The filename formatter."""
+
+    ext = str()
+    has_ext = False
+    if not ign_ext:
+        has_ext = '.' in arg
+        if has_ext:
+            try: arg, ext = arg.split('.')
+            except ValueError:
+                *arg, ext = arg.split('.')
+                arg = '.'.join(arg)
+
     arg = list(arg)
     for i in range(len(arg)):
         if arg[i] in bad_chars: arg[i] = delim
-    return str().join(arg).strip(delim)
+    return str().join(arg).strip(delim) \
+           if not has_ext else \
+           str().join(arg).strip(delim) + '.' + ext 
 
 # Option parsing.
-try: opts, arg = gnu_getopt(argv[1:], 'd:sa:h', ["delimeter=", "show", "add=", "help"])
+try: opts, arg = gnu_getopt(argv[1:], 'd:sa:hx', ["delimeter=", "show", "add=", "ignore-extension","help"])
 except GetoptError as getopt_error: exit(f"<{ANSI_RED}!{ANSI_RESET}> Invalid option: '{getopt_error.opt}'.")
 if not opts == []:
     for e in opts:
-        if e[0] == "-d" or e[0] == "--delimeter": delim = e[1]
+        if e[0] == "-d" or e[0] == "--delimeter":
+            delim = e[1]
         elif e[0] == "-s" or e[0] == "--show":
             exit(f"<{ANSI_GREEN}+{ANSI_RESET}> {str().join(bad_chars)}")
         elif e[0] == "-a" or e[0] == "--add":
-            for c in e[1]:
-                bad_chars.add(c)
-        elif e[0] == "-h" or e[0] == "--help": __help__()
+            bad_chars = bad_chars | set(e[1])
+        elif e[0] == "-x" or e[0] == "--ignore-extension":
+            ign_ext = True
+        elif e[0] == "-h" or e[0] == "--help":
+            help__()
 
 # Formatting.
 selected_cnt = 0 # The count of the selected files.
@@ -97,7 +117,10 @@ for arg in arg:
         rename(src_arg, arg)
         renamed_cnt += 1
     except FileNotFoundError:
-        print(f"<{ANSI_RED}!{ANSI_RESET}> The file does not exist.")
+        print(f"<{ANSI_RED}!{ANSI_RESET}> The file does not exist ('{src_arg}').")
+        continue
+    except PermissionError:
+        print(f"<{ANSI_RED}!{ANSI_RESET}> Insufficient privileges to rename the file ('{src_arg}').")
         continue
 
     # Report for renaming.
