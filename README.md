@@ -6,4 +6,4 @@
   It is especially useful for avoiding quotes and backslashes on every interaction with files. It
   has some power over how the files will be formatted: the set of characters that will be
   replaced (called *bad characters*); the character that will replace the bad characters
-  (called *delimeter*); the formatting of file extensions.
+  (called *delimiter*); the formatting of file extensions.

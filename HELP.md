@@ -23,7 +23,7 @@ and the program will exit.
 This accepts a string of characters that will be *added* to the set of bad
 characters. To see the characters that were added via the `show` option, the
 `show` option must succeed the `add` option. If the `show` option precedes
-the `add` options, no change will be seen, since the program would have 
+the `add` option, no change will be seen, since the program would have 
 already exited.
 * `-x`, `--ignore-extension`\
 This switch will deny the existence of file extensions. Therefore, the file
