@@ -20,19 +20,19 @@ def help__() -> None:
                          "#     #   # ## ##   #   #   # ##  # ## ##\n"\
                          "##### ####  # # #   #   ####  # # # # # #\n"\
                         f"#     #   # #   #   #   #   # #  ## #   #{ANSI_RESET}"
-    print(logo, f"\nUsage: {argv[0]} [-d <delimeter> | --delimeter=<delimeter>] Set the delimeter; the default is a hyphen.\n"\
+    print(logo, f"\nUsage: {argv[0]} [-d <delimiter> | --delimiter=<delimiter>] Set the delimiter; the default is a hyphen.\n"\
                   f"       {indent } [-s | --show ] Display the set of characters that will be replaced.\n"\
                   f"       {indent } [-a <string of characters> | --add=<string of characters>] Add characters to be replaced to the set.\n"\
                   f"       {indent } [-h | --help] Display this.\n"\
                   f"       {indent } [-x | --ignore-extension] Ignores the file extension. By default, it is left untouched.")
-    print("\nNotes: \nHere delimeter refers to that which is to be replaced with.")
+    print("\nNotes: \nHere delimiter refers to that which is to be replaced with.")
     exit()
 
 # Pre-emptive checking.
 if len(argv) < 2: help__()
 
 # Definitions.
-delim = '-' # Default delimeter.
+delim = '-' # Default delimiter.
 bad_chars: Set[str] = {
     # Characters to be replaced.
     '(', ')',
@@ -67,14 +67,14 @@ def formatting(arg: str) -> str:
         if arg[i] in bad_chars: arg[i] = delim
     return str().join(arg).strip(delim) \
            if not has_ext else \
-           str().join(arg).strip(delim) + '.' + ext 
+           str().join(arg).strip(delim) + '.' + ext
 
 # Option parsing.
-try: opts, arg = gnu_getopt(argv[1:], 'd:sa:hx', ["delimeter=", "show", "add=", "ignore-extension","help"])
+try: opts, arg = gnu_getopt(argv[1:], 'd:sa:hx', ["delimiter=", "show", "add=", "ignore-extension","help"])
 except GetoptError as getopt_error: exit(f"<{ANSI_RED}!{ANSI_RESET}> Invalid option: '{getopt_error.opt}'.")
 if not opts == []:
     for opt, val in opts:
-        if opt == "-d" or opt == "--delimeter":
+        if opt == "-d" or opt == "--delimiter":
             delim = val
         elif opt == "-s" or opt == "--show":
             exit(f"<{ANSI_GREEN}+{ANSI_RESET}> {str().join(bad_chars)}")
