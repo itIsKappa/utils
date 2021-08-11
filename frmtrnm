@@ -1,5 +1,8 @@
 #! /bin/python3
 
+# Declaring the file to be not importable.
+assert __name__ == "__main__", "Not a module"
+
 # Imports.
 from sys import argv
 from os import rename
@@ -10,21 +13,31 @@ from typing import Set
 # Definition for colours.
 ANSI_RED = "\x1b[31m"
 ANSI_GREEN = "\x1b[32m"
-ANSI_YELLOW = "\x1b[33m"
+ANSI_BLUE = "\x1b[36m"
 ANSI_RESET = "\x1b[39m"
 
 # Help.
+prog_name = argv[0].split('/')[-1]
 def help__() -> None:
-    indent = ' ' * len(argv[0])
+    indent = ' ' * len(prog_name)
     logo = f"{ANSI_YELLOW}##### ####  #   # ##### ####  #   # #   #\n"\
                          "#     #   # ## ##   #   #   # ##  # ## ##\n"\
                          "##### ####  # # #   #   ####  # # # # # #\n"\
                         f"#     #   # #   #   #   #   # #  ## #   #{ANSI_RESET}"
-    print(logo, f"\nUsage: {argv[0]} [-d <delimiter> | --delimiter=<delimiter>] Set the delimiter; the default is a hyphen.\n"\
-                  f"       {indent } [-s | --show ] Display the set of characters that will be replaced.\n"\
-                  f"       {indent } [-a <string of characters> | --add=<string of characters>] Add characters to be replaced to the set.\n"\
-                  f"       {indent } [-h | --help] Display this.\n"\
-                  f"       {indent } [-x | --ignore-extension] Ignores the file extension. By default, it is left untouched.")
+    print(logo, f"\nUsage: {prog_name} [-d <delimiter> | --delimiter=<delimiter>]\n\
+                           Set the delimiter; the default is a hyphen.\n"\
+                  f"       {indent   } [-s | --show ]\n\
+                           Display the set of characters that will be replaced.\n"\
+                  f"       {indent   } [-a <string of characters> | --add=<string of characters>]\n\
+                           Add characters to be replaced to the set.\n"\
+                  f"       {indent   } [-r <string of characters> | --remove=<string of characters>]\n\
+                           Remove characters to be replaced from the set.\n"\
+                  f"       {indent   } [-R <string of characters> | --redefine=<string of characters>]\n\
+                           Replace all the characters to be replaced.\n"\
+                  f"       {indent   } [-h | --help]\n\
+                           Display this.\n"\
+                  f"       {indent   } [-x | --ignore-extension]\n\
+                           Ignores the file extension. By default, it is left untouched.")
     print("\nNotes: \nHere delimiter refers to that which is to be replaced with.")
     exit()
 
@@ -70,8 +83,9 @@ def formatting(arg: str) -> str:
            str().join(arg).strip(delim) + '.' + ext
 
 # Option parsing.
-try: opts, arg = gnu_getopt(argv[1:], 'd:sa:hx', ["delimiter=", "show", "add=", "ignore-extension","help"])
-except GetoptError as getopt_error: exit(f"<{ANSI_RED}!{ANSI_RESET}> Invalid option: '{getopt_error.opt}'.")
+try: opts, arg = gnu_getopt(argv[1:], 'd:sa:r:R:hx', ["delimiter=", "show", "add=", "remove=", "redefine=", "ignore-extension", "help"])
+except GetoptError as getopt_error:
+    exit(f"<{ANSI_RED}!{ANSI_RESET}> Erroneous option: '{getopt_error.opt}'.")
 if not opts == []:
     for opt, val in opts:
         if opt == "-d" or opt == "--delimiter":
@@ -79,7 +93,11 @@ if not opts == []:
         elif opt == "-s" or opt == "--show":
             exit(f"<{ANSI_GREEN}+{ANSI_RESET}> {str().join(bad_chars)}")
         elif opt == "-a" or opt == "--add":
-            bad_chars = bad_chars | set(val)
+            bad_chars |= set(val)
+        elif opt == "-r" or opt == "--remove":
+            bad_chars -= set(val)
+        elif opt == "-R" or opt == "--redefine":
+            bad_chars = set(val)
         elif opt == "-x" or opt == "--ignore-extension":
             ign_ext = True
         elif opt == "-h" or opt == "--help":
@@ -124,7 +142,7 @@ for arg in arg:
         continue
 
     # Report for renaming.
-    print(f"<{ANSI_GREEN}+{ANSI_RESET}> {src_arg} {ANSI_YELLOW}->{ANSI_RESET} {arg}")
+    print(f"<{ANSI_GREEN}+{ANSI_RESET}> '{src_arg}' {ANSI_BLUE}to{ANSI_RESET} '{arg}'")
 
 # Statistics.
 skipped_cnt = selected_cnt - renamed_cnt
