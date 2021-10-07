@@ -8,7 +8,6 @@ from sys import argv
 from os import rename
 from os.path import exists
 from getopt import gnu_getopt, GetoptError
-from typing import Set
 
 # Definition for colours.
 ANSI_RED = "\x1b[31m"
@@ -20,24 +19,28 @@ ANSI_RESET = "\x1b[39m"
 prog_name = argv[0].split('/')[-1]
 def help__() -> None:
     indent = ' ' * len(prog_name)
-    logo = f"{ANSI_YELLOW}##### ####  #   # ##### ####  #   # #   #\n"\
-                         "#     #   # ## ##   #   #   # ##  # ## ##\n"\
-                         "##### ####  # # #   #   ####  # # # # # #\n"\
-                        f"#     #   # #   #   #   #   # #  ## #   #{ANSI_RESET}"
-    print(logo, f"\nUsage: {prog_name} [-d <delimiter> | --delimiter=<delimiter>]\n\
-                           Set the delimiter; the default is a hyphen.\n"\
-                  f"       {indent   } [-s | --show ]\n\
-                           Display the set of characters that will be replaced.\n"\
-                  f"       {indent   } [-a <string of characters> | --add=<string of characters>]\n\
-                           Add characters to be replaced to the set.\n"\
-                  f"       {indent   } [-r <string of characters> | --remove=<string of characters>]\n\
-                           Remove characters to be replaced from the set.\n"\
-                  f"       {indent   } [-R <string of characters> | --redefine=<string of characters>]\n\
-                           Replace all the characters to be replaced.\n"\
-                  f"       {indent   } [-h | --help]\n\
-                           Display this.\n"\
-                  f"       {indent   } [-x | --ignore-extension]\n\
-                           Ignores the file extension. By default, it is left untouched.")
+    logo = f"{ANSI_BLUE}  ___ ___ __  __ _____ ___ _  _ __  __ \n" \
+                      f" | __| _ \  \/  |_   _| _ \ \| |  \/  |\n" \
+                      f" | _||   / |\/| | | | |   / .` | |\/| |\n" \
+                      f" |_| |_|_\_|  |_| |_| |_|_\_|\_|_|  |_|{ANSI_RESET}\n"
+    print(logo, f"\nUsage:\n{prog_name} [-d <delimiter> | --delimiter=<delimiter>]\n\
+                    Set the delimiter; the default is a hyphen.\n" \
+                  f"{indent} [-s | --show]\n\
+                    Display the set of characters that will be replaced.\n" \
+                  f"{indent} [-a <string of characters> | --add=<string of characters>]\n\
+                    Add characters to be replaced to the set.\n" \
+                  f"{indent} [-r <string of characters> | --remove=<string of characters>]\n\
+                    Remove characters to be replaced from the set.\n" \
+                  f"{indent} [-R <string of characters> | --redefine=<string of characters>]\n\
+                    Replace all the characters to be replaced.\n" \
+                  f"{indent} [-x | --ignore-extension]\n\
+                    Ignores the file extension. By default, it is left untouched.\n" \
+                  f"{indent} [-h | --help]\n\
+                    Displays this.\n" \
+                  f"{indent} [-l <value> | --min-cluster-limit=<value>]\n\
+                    Sets the minimum count of delimiters in a cluster.\n" \
+                  f"{indent} [-L <value> | --max-cluster-limit=<value>]\n\
+                    Sets the maximum count of delimites in a cluster.")
     print("\nNotes: \nHere delimiter refers to that which is to be replaced with.")
     exit()
 
@@ -46,7 +49,7 @@ if len(argv) < 2: help__()
 
 # Definitions.
 delim = '-' # Default delimiter.
-bad_chars: Set[str] = {
+bad_chars: set[str] = {
     # Characters to be replaced.
     '(', ')',
     '[', ']',
@@ -60,7 +63,51 @@ bad_chars: Set[str] = {
     '\\', '|',
     '?', '<', '>'
 }
-ign_ext = False # Ignore extension?
+ign_ext = False # Ignore extensions?
+
+cluster_min_max: list[tuple[bool, int]] = [
+    # Zero is a place-holder value.
+    (False, 0), # Minimum.
+    (False, 0)  # Maximum.
+] # The booleans represent whether to consider the subsequent value.
+
+def cluster_managing(arg: str) -> str:
+    """Manages the minimum and maximum length of delimiter clusters in filenames."""
+
+    to_mng_lst: list[str] = [''] # A new list to manage clusters.
+    prev_was_delim = True        # Was the previous a delimiter?
+
+    for e in arg:
+        if e == delim:
+            if prev_was_delim: to_mng_lst[-1] += delim
+            else: to_mng_lst.append(delim)
+            prev_was_delim = True
+        else:
+            if prev_was_delim: to_mng_lst.append(e)
+            else: to_mng_lst[-1] += e
+            prev_was_delim = False
+    if to_mng_lst[0] == '': to_mng_lst.pop(0)
+
+    # It is only necessary to traverse with steppings of two.
+    # This is from the very nature of delimiters.
+    # Below determines where to begin the traversal, whether
+    # from index 0 or 1 with XOR.
+    index = 1 ^ (to_mng_lst[0][0] == delim)
+
+    while index < len(to_mng_lst):
+        # Minimum cluster size.
+        if cluster_min_max[0][0] and to_mng_lst[index].count(delim) < \
+           (limit := cluster_min_max[0][1]):
+            to_mng_lst[index] = delim * limit
+        # Maximum cluster size.
+        if cluster_min_max[1][0] and to_mng_lst[index].count(delim) > \
+           (limit := cluster_min_max[1][1]):
+            to_mng_lst[index] = delim * limit
+        # Double stepping.
+        index += 2
+
+    return str().join(to_mng_lst)
+
 
 def formatting(arg: str) -> str:
     """The filename formatter."""
@@ -76,16 +123,36 @@ def formatting(arg: str) -> str:
                 arg = '.'.join(arg)
 
     arg = list(arg)
+    # bad_char replacement.
     for i in range(len(arg)):
         if arg[i] in bad_chars: arg[i] = delim
+    # Cluster management.
+    arg = cluster_managing(arg)
+
     return str().join(arg).strip(delim) \
            if not has_ext else \
            str().join(arg).strip(delim) + '.' + ext
 
 # Option parsing.
-try: opts, arg = gnu_getopt(argv[1:], 'd:sa:r:R:hx', ["delimiter=", "show", "add=", "remove=", "redefine=", "ignore-extension", "help"])
+try:
+    opts, args = gnu_getopt(
+                 argv[1:],
+                 # Short options.
+                 "d:sa:r:R:l:L:hx",
+                 # Long options.
+                 ["delimiter=",
+                  "show",
+                  "add=",
+                  "remove=",
+                  "redefine=",
+                  "min-cluster-limit=",
+                  "max-cluster-limit=",
+                  "ignore-extension",
+                  "help"
+                 ])
 except GetoptError as getopt_error:
     exit(f"<{ANSI_RED}!{ANSI_RESET}> Erroneous option: '{getopt_error.opt}'.")
+
 if not opts == []:
     for opt, val in opts:
         if opt == "-d" or opt == "--delimiter":
@@ -98,6 +165,12 @@ if not opts == []:
             bad_chars -= set(val)
         elif opt == "-R" or opt == "--redefine":
             bad_chars = set(val)
+        elif opt == "-l" or opt == "--min-cluster-limit":
+            try: cluster_min_max[0] = True, int(val)
+            except ValueError: exit("Minimum limit must be an integer.")
+        elif opt == "-L" or opt == "--max-cluster-limit":
+            try: cluster_min_max[1] = True, int(val)
+            except ValueError: exit("Maximum limit must be an integer.")
         elif opt == "-x" or opt == "--ignore-extension":
             ign_ext = True
         elif opt == "-h" or opt == "--help":
@@ -107,7 +180,7 @@ if not opts == []:
 selected_cnt = 0 # The count of the selected files.
 renamed_cnt  = 0 # The count of the successfully renamed files.
 
-for arg in arg:
+for arg in args:
     src_arg = arg # Source copy of the argument.
     selected_cnt += 1
 
@@ -123,7 +196,8 @@ for arg in arg:
         continue
     elif exists(arg): # Checking filename coincidences.
         consent = True \
-                  if input(f"<{ANSI_RED}!{ANSI_RESET}> The formatted filename ('{src_arg}') coincides with another filename ('{arg}'). Continue (yes/no)? ") == "yes" \
+                  if input(f"<{ANSI_RED}!{ANSI_RESET}> The formatted filename ('{src_arg}') coincides" \
+                           "with another filename ('{arg}'). Continue (yes/no)? ") == "yes" \
                   else False
         if consent: print(f"<{ANSI_GREEN}+{ANSI_RESET}> Consent report: {ANSI_GREEN}Positive{ANSI_RESET}.")
         else:
