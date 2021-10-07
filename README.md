@@ -1,6 +1,4 @@
 # Utilities
-* `eudo`\
-  Hassle-free command forwarding shell script for `su`.
 * `frmtrnm`\
   A python program for formatting and renaming filenames that contain special characters.
   It is especially useful for avoiding quotes and backslashes on every interaction with files. It
