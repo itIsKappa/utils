@@ -41,6 +41,17 @@ $ frmtrnm 'some  some.file' -l3
 <+> 'some some.file' to 'some---some.file'
 1 selected; 1 renamed; 0 skipped.
 ```
+It can be seen that three delimiters appeared for a double space.
+* `-L`, `--max-cluster-limit=`\
+This option is identical to the above, except, as its name suggests, it is related
+to maximum cluster limits. Any cluster having more than the specified number of delimiters
+will be mutated to have the maximum number of delimiters.
+```
+$ frmtrnm 'some  some.file' -L1
+<+> 'some  some.file' to 'some-some.file'
+1 selected; 1 renamed; 0 skipped.
+```
+It can be seen that only a single delimiter appeared for the double space.
 
 * `-h`, `--help`\
 Prints a help message.
