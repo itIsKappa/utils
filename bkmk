@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 
 import pickle
-import readline, colorama
+import colorama
 import os
 from sys import argv
 from math import log10
@@ -91,7 +91,7 @@ class BkMk:
     # reserved for the book names in the table.
 
     print(f"┌─────┬─{'─'  * mbl}─┬─{     '─' *12    }─┐")
-    print(f"│ {'#  '} │ {'Name':{mbl}} │ {'Page number':12} │")
+    print(f"│ {'  #'} │ {'Name':{mbl}} │ {'Page number':12} │")
     print(f"├─────┼─{'─'  * mbl}─┼─{     '─' *12    }─┤")
     for no, bknm, pg in lib:
       print(f"│ {no:3} │ {bknm:{mbl}} │ {pg:12} │") 
