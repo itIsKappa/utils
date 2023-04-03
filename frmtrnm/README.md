@@ -71,6 +71,5 @@
 | Library     | `gnu_getopt`   | —                                       |
 
 
-[^Delimiter]: The character with which the bad characters will be replaced
-[^BadCharacters]: The characters that will be
-  replaced with the delimiter.
+[^Delimiter]: The character that replaces the bad characters
+[^BadCharacters]: The characters replaced by the delimiter
