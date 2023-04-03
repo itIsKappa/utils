@@ -1,8 +1,5 @@
 # `frmtrnm`
 `frmtrnm <options> <files>`\
-Order of the passed arguments does not concern the program. Arguments are
-parsed with GNU `getopt`, and as such will have its features. The following
-are the available options.
 
 * `-d`, `--delimiter=`\
 This accepts a string as the new delimiter. If unspecified, the default is
@@ -95,5 +92,5 @@ without a verb specified, the behaviour is identical to `bkmk view`.
 * `help`\
   This displays a quick help for the user.
 
-Also, the first letter of each verb is its alias — i.e. a verb can referred
+Also, the first letter of each verb is its alias — i.e. a verb can be referred
 to by its first letter instead of the full word.
