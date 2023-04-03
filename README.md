@@ -10,4 +10,5 @@
   provides essential features — add; update; remove — and a tabular display
   of entered bookmarks.
 
-The manual for each above can be found in `HELP.md`.
+The manual for each above can be found in `README.md` of their respective
+directories.
