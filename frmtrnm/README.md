@@ -13,8 +13,8 @@
 
 ## Options
 * `-d`, `--delimiter=`\
-  This accepts a string as the new delimiter. If unspecified, the default is
-  a hyphen.
+  This accepts a string as the new delimiter[^Delimiter]. If unspecified,
+  the default is a hyphen.
 
 * `-s`, `--show`\
   Prints the set of bad characters to `stdout`. Further execution will be
@@ -22,10 +22,10 @@
 
 * `-a`, `--add=`\
   This accepts a string of characters that will be *added* to the set of bad
-  characters. To see the characters that were added via the `show` option,
-  the `show` option must succeed the `add` option. If the `show` option
-  precedes the `add` option, no change will be seen, since the program would
-  have already exited.
+  characters[^BadCharacters]. To see the characters that were added via the
+  `show` option, the `show` option must succeed the `add` option. If the
+  `show` option precedes the `add` option, no change will be seen, since the
+  program would have already exited.
 * `-x`, `--ignore-extension`\
   This switch will deny the existence of file extensions. Therefore, the
   file extension will become a regular part of the filename, and will be
@@ -69,3 +69,8 @@
 | ----------- | -------------- | :-------------------------------------: |
 | Interpreter | CPython ≥3.9.2 | `frmtrnm` was tested with CPython 3.9.2 |
 | Library     | `gnu_getopt`   | —                                       |
+
+
+[^Delimiter]: The character with which the bad characters will be replaced
+[^BadCharacters]: The characters that will be
+  replaced with the delimiter.
