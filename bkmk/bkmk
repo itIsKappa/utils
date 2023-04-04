@@ -15,6 +15,8 @@ class BkMk:
     self.lib = library
 
   def textcolor(self, txt: str, clr: str):
+    '''A method for applying colour to texts.''' 
+
     colors = {
       1: colorama.Fore.BLUE,
       2: colorama.Fore.RED,
@@ -25,6 +27,8 @@ class BkMk:
     return f"{colors[clr]}{txt}{colorama.Fore.RESET}"
 
   def show_error(self, msg: str):
+    '''A method to display consistent error messages to the user.'''
+
     print(" ¯\_(•_•)_/¯  " + msg)
 
   def add(self, bk: str, pg: int):
@@ -36,6 +40,10 @@ class BkMk:
     except FileNotFoundError:
         lib = []
 
+    # We iterate through lib to find a vacancy in the sequence (created when a
+    # medial bookmark is removed) and assign the new bookmark the lowest
+    # vacant number if it exists.  If the sequence is complete, we assign
+    # the next the number.
     for i in range(len(lib)):
       if i != lib[i][0]:
         no = i
@@ -86,16 +94,20 @@ class BkMk:
     with open(self.index, 'rb') as f:
       lib = pickle.load(f)
 
-    mbl = max([len(x) for _, x, _ in lib])
-    # max_bknm_len ([m]aximum [b]ook name [l]ength) specifies the amount of space
-    # reserved for the book names in the table.
+    # For efficient use of screen space, the length of NAME and LOCATION
+    # (the names of the table columns) must be adjusted to the length of the
+    # contents.  The variables mbl and mll are sought for NAME and LOCATION
+    # respectively.
+    mbl = max([len(x) for _, x, _ in lib] + [4])
+    mll = max([len(x) for _, _, x in lib] + [8])
 
-    print(f"┌─────┬─{'─'  * mbl}─┬─{     '─' *12    }─┐")
-    print(f"│ {'  #'} │ {'Name':{mbl}} │ {'Page number':12} │")
-    print(f"├─────┼─{'─'  * mbl}─┼─{     '─' *12    }─┤")
+    # The tables are printed using U+2500 and above.
+    print(f"┌─────┬─{'─'  * mbl}─┬─{     '─' * mll   }─┐")
+    print(f"│ {'  #'} │ {'Name':{mbl}} │ {'Location':{mll}} │")
+    print(f"├─────┼─{'─'  * mbl}─┼─{     '─' * mll   }─┤")
     for no, bknm, pg in lib:
-      print(f"│ {no:3} │ {bknm:{mbl}} │ {pg:12} │") 
-    print(f"└─────┴─{'─'  * mbl}─┴─{     '─' *12    }─┘")
+      print(f"│ {no:3} │ {bknm:{mbl}} │ {pg:{mll}} │") 
+    print(f"└─────┴─{'─'  * mbl}─┴─{     '─' * mll   }─┘")
 
   def remove(self, bkn: str):
     '''Remove the specified index.'''
