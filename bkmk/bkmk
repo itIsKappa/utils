@@ -14,7 +14,7 @@ class BkMk:
   def __init__(self, library: str):
     self.lib = library
 
-  def textcolor(self, txt: str, clr: str):
+  def __textcolor__(self, txt: str, clr: str):
     '''A method for applying colour to texts.''' 
 
     colors = {
@@ -26,7 +26,7 @@ class BkMk:
     }
     return f"{colors[clr]}{txt}{colorama.Fore.RESET}"
 
-  def show_error(self, msg: str):
+  def __show_error__(self, msg: str):
     '''A method to display consistent error messages to the user.'''
 
     print(" ¯\_(•_•)_/¯  " + msg)
@@ -58,7 +58,7 @@ class BkMk:
     with open(self.index, 'wb') as f:
       pickle.dump(lib, f)
 
-    print(self.textcolor("Added:", 3),
+    print(self.__textcolor__("Added:", 3),
           f"‘{bk}’ pp.{pg}")
   
   def update(self, bkn: int, new_pg: int):
@@ -66,7 +66,7 @@ class BkMk:
     
     try: bkn = int(bkn)
     except ValueError:
-      self.show_error(f"Are you sure ‘{bkn}’ is an integer?")
+      self.__show_error__(f"Are you sure ‘{bkn}’ is an integer?")
       return
 
     with open(self.index, 'rb') as f:
@@ -79,14 +79,14 @@ class BkMk:
         bk_nm = lib[i][1]  # To display the updated bookmark
         break
     else:
-      self.show_error("It seems you don’t have such a bookmark.")
+      self.__show_error__("It seems you don’t have such a bookmark.")
       return
     
     with open(self.index, 'wb') as f:
       pickle.dump(lib, f)
 
-    print(f"‘{bk_nm}’: {old_pg} ⇒",
-          self.textcolor(new_pg, 1))
+    print(f"‘{bk_nm}’: {old_pg} →",
+          self.__textcolor__(new_pg, 5))
   
   def view(self):
     '''View the book names and their corresponding bookmark.'''
@@ -114,7 +114,7 @@ class BkMk:
 
     try: bkn = int(bkn)
     except ValueError:
-      self.show_error(f"Are you sure ‘{bkn}’ is an integer?")
+      self.__show_error__(f"Are you sure ‘{bkn}’ is an integer?")
 
     with open(self.index, 'rb') as f:
       lib = pickle.load(f)
@@ -124,13 +124,13 @@ class BkMk:
         bk_nm = lib.pop(i)[1]  # To display the removed bookmark
         break
     else:
-      self.show_error("It seems you don’t have such a bookmark.")
+      self.__show_error__("It seems you don’t have such a bookmark.")
       return
     
     with open(self.index, 'wb') as f:
       pickle.dump(lib, f)
 
-    print(self.textcolor("Removed:", 2),
+    print(self.__textcolor__("Removed:", 2),
           f"‘{bk_nm}’")
 
 
@@ -178,12 +178,12 @@ class Run(BkMk):
     try:
       self.verbs[self.args[0]](*self.args[1:])
     except KeyError:
-      self.show_error(f"‘{self.args[0]}’ is a strange verb."
+      self.__show_error__(f"‘{self.args[0]}’ is a strange verb."
         "  Type ‘help’ for help.")
     except IndexError:
       self.view()
     except TypeError: 
-      self.show_error("Something’s missing."
+      self.__show_error__("Something’s missing."
         "  You could type ‘help’ and read up on the verb.")
 
 
