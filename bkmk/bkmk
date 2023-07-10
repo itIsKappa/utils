@@ -59,7 +59,7 @@ class BkMk:
       pickle.dump(lib, f)
 
     print(self.__textcolor__("Added:", 3),
-          f"‘{bk}’ pp.{pg}")
+          f"‘{bk}’  {pg}")
   
   def update(self, bkn: int, new_pg: int):
     '''Update the page number of an existing index.'''
