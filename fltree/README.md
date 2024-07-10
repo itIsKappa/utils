@@ -3,7 +3,11 @@
 an arbitrary tree.  The tree can either be input as a file or directly into the
 standard input.
 
-## Input format
+## Table of Contents
+* [Input Format](#input-format)
+* [Manual](#manual)
+
+## Input Format
 `fltree` expects the input to be of a definite but simple format.  *Every child
 of a parent must be indented more than the parent*.  There are no edge cases or
 exceptions.
