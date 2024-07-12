@@ -68,13 +68,13 @@ grow = draw "" True
 -- The above would create a tree:
 --         Branch "Asia" [Leaf "China", Branch "India" [Leaf "Pakistan]].
 -- Both China and India are children of Asia, however Pakistan becomes a child
--- of India.  Trees of other types can be produced by mapping 'show' over the
+-- of India.  Trees of other types can be produced by mapping 'read' over the
 -- tree.
 clone :: String -> Tree String
 clone = forage . map (span (== ' ')) . lines
   where
     forage :: (Eq a, Ord a) => [(a, a)] -> Tree a
-    forage (x:[]) = Leaf (snd x)
+    forage (x1:[]) = Leaf (snd x1)
     forage (x1:x2:xs)
       | fst x1 < fst x2 = Branch (snd x1) [] =<>- Branch undefined
                                                     (forage <$> cut (x2:xs))
