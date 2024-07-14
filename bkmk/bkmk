@@ -1,9 +1,8 @@
 #! /usr/bin/python3
 
 import pickle
-import colorama
 import os
-from sys import argv
+from sys import argv, stderr, exit
 from math import log10
 
 
@@ -18,18 +17,18 @@ class Library:
         '''A method for applying colour to texts.''' 
 
         colors = {
-          1: colorama.Fore.BLUE,
-          2: colorama.Fore.RED,
-          3: colorama.Fore.GREEN,
-          4: colorama.Fore.MAGENTA,
-          5: colorama.Fore.CYAN
+          1: '\x1b[34m', # BLUE
+          2: '\x1b[31m', # RED
+          3: '\x1b[32m', # GREEN
+          4: '\x1b[35m', # MAGENTA
+          5: '\x1b[36m'  # CYAN
         }
-        return f"{colors[clr]}{txt}{colorama.Fore.RESET}"
+        return f"{colors[clr]}{txt}" + "\x1b[39m"
 
     def __show_error__(self, msg: str):
         '''A method to display consistent error messages to the user.'''
 
-        print(" ¯\_(•_•)_/¯  " + msg)
+        print(" ¯\_(•_•)_/¯  " + msg, file=stderr)
 
     def add(self, bk: str, pg: int):
         '''Add an entry into the index.'''
@@ -38,7 +37,9 @@ class Library:
             with open(self.index, 'rb') as f:
               lib = pickle.load(f)
         except FileNotFoundError:
-              lib = []
+            lib = []
+        except EOFError:
+            lib = []
 
         # We iterate through lib to find a vacancy in the sequence (created when a
         # medial bookmark is removed) and assign the new bookmark the lowest
@@ -91,8 +92,16 @@ class Library:
     def view(self):
         '''View the book names and their corresponding bookmark.'''
 
-        with open(self.index, 'rb') as f:
-            lib = pickle.load(f)
+        try:
+            lib = []
+            with open(self.index, 'rb') as f:
+                lib = pickle.load(f)
+        except EOFError:
+            self.__show_error__("Your library is empty.  Add something.")
+        finally:
+            if lib == []:
+                print("There‘s nothing here but silence.")
+                return
 
         # For efficient use of screen space, the length of NAME and LOCATION
         # (the names of the table columns) must be adjusted to the length of the
@@ -155,10 +164,15 @@ class Build(Library):
             'h': self.help
         }
 
-      self.home = "/home/ali"
-      self.index = f"{self.home}/.bkmk/index.bin"
-      if not os.path.exists(f"{self.home}/.bkmk"):
-          os.mkdir(f"{self.home}/.bkmk")    
+        self.home = os.path.expanduser("~")
+        self.index = f"{self.home}/.bkmk/index.bin"
+        if not os.path.exists(f"{self.home}/.bkmk"):
+            print(f"Creating library ...")
+            os.mkdir(f"{self.home}/.bkmk")    
+            print(f"Library has been set up.")
+            with open(self.index, "wb"):
+                pass
+            exit()
 
     def help(self):
         '''Present help to the user.'''
