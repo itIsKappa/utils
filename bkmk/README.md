@@ -55,4 +55,3 @@ to by its first letter instead of the full word.
 | Type        | Name           | Comment                               |
 | ----------- | -------------- | :-----------------------------------: |
 | Interpreter | CPython ≥3.9.2 | `bkmk` was tested with CPython  3.9.2 |
-| Library     | colorama       | —                                     |
