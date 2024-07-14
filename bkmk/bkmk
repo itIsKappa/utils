@@ -7,185 +7,185 @@ from sys import argv
 from math import log10
 
 
-class BkMk:
-  '''A class of methods to manage the system-wide index of document
-  bookmarks.'''
-  
-  def __init__(self, library: str):
-    self.lib = library
-
-  def __textcolor__(self, txt: str, clr: str):
-    '''A method for applying colour to texts.''' 
-
-    colors = {
-      1: colorama.Fore.BLUE,
-      2: colorama.Fore.RED,
-      3: colorama.Fore.GREEN,
-      4: colorama.Fore.MAGENTA,
-      5: colorama.Fore.CYAN
-    }
-    return f"{colors[clr]}{txt}{colorama.Fore.RESET}"
-
-  def __show_error__(self, msg: str):
-    '''A method to display consistent error messages to the user.'''
-
-    print(" ¯\_(•_•)_/¯  " + msg)
-
-  def add(self, bk: str, pg: int):
-    '''Add an entry into the index.'''
+class Library:
+    '''A class of methods to manage the system-wide index of document
+    bookmarks.'''
     
-    try:
-      with open(self.index, 'rb') as f:
-        lib = pickle.load(f)
-    except FileNotFoundError:
-        lib = []
+    def __init__(self, library: str):
+        self.lib = library
 
-    # We iterate through lib to find a vacancy in the sequence (created when a
-    # medial bookmark is removed) and assign the new bookmark the lowest
-    # vacant number if it exists.  If the sequence is complete, we assign
-    # the next the number.
-    for i in range(len(lib)):
-      if i != lib[i][0]:
-        no = i
-        break
-    else:
-      no = len(lib)
-    rec = [no, bk, pg]
+    def __textcolor__(self, txt: str, clr: str):
+        '''A method for applying colour to texts.''' 
 
-    lib.append(rec)
-    lib.sort()
+        colors = {
+          1: colorama.Fore.BLUE,
+          2: colorama.Fore.RED,
+          3: colorama.Fore.GREEN,
+          4: colorama.Fore.MAGENTA,
+          5: colorama.Fore.CYAN
+        }
+        return f"{colors[clr]}{txt}{colorama.Fore.RESET}"
 
-    with open(self.index, 'wb') as f:
-      pickle.dump(lib, f)
+    def __show_error__(self, msg: str):
+        '''A method to display consistent error messages to the user.'''
 
-    print(self.__textcolor__("Added:", 3),
-          f"‘{bk}’  {pg}")
-  
-  def update(self, bkn: int, new_pg: int):
-    '''Update the page number of an existing index.'''
+        print(" ¯\_(•_•)_/¯  " + msg)
+
+    def add(self, bk: str, pg: int):
+        '''Add an entry into the index.'''
+        
+        try:
+            with open(self.index, 'rb') as f:
+              lib = pickle.load(f)
+        except FileNotFoundError:
+              lib = []
+
+        # We iterate through lib to find a vacancy in the sequence (created when a
+        # medial bookmark is removed) and assign the new bookmark the lowest
+        # vacant number if it exists.  If the sequence is complete, we assign
+        # the next the number.
+        for i in range(len(lib)):
+            if i != lib[i][0]:
+              no = i
+              break
+        else:
+            no = len(lib)
+        rec = [no, bk, pg]
+
+        lib.append(rec)
+        lib.sort()
+
+        with open(self.index, 'wb') as f:
+            pickle.dump(lib, f)
+
+        print(self.__textcolor__("Added:", 3),
+              f"‘{bk}’  {pg}")
     
-    try: bkn = int(bkn)
-    except ValueError:
-      self.__show_error__(f"Are you sure ‘{bkn}’ is an integer?")
-      return
+    def update(self, bkn: int, new_pg: int):
+        '''Update the page number of an existing index.'''
+        
+        try: bkn = int(bkn)
+        except ValueError:
+            self.__show_error__(f"Are you sure ‘{bkn}’ is an integer?")
+            return
 
-    with open(self.index, 'rb') as f:
-      lib = pickle.load(f)
+        with open(self.index, 'rb') as f:
+            lib = pickle.load(f)
 
-    for i in range(len(lib)):
-      if lib[i][0] == bkn:
-        old_pg = lib[i][2]
-        lib[i][2] = new_pg
-        bk_nm = lib[i][1]  # To display the updated bookmark
-        break
-    else:
-      self.__show_error__("It seems you don’t have such a bookmark.")
-      return
+        for i in range(len(lib)):
+            if lib[i][0] == bkn:
+                old_pg = lib[i][2]
+                lib[i][2] = new_pg
+                bk_nm = lib[i][1]  # To display the updated bookmark
+                break
+        else:
+            self.__show_error__("It seems you don’t have such a bookmark.")
+            return
+        
+        with open(self.index, 'wb') as f:
+            pickle.dump(lib, f)
+
+        print(f"‘{bk_nm}’: {old_pg} →",
+              self.__textcolor__(new_pg, 5))
     
-    with open(self.index, 'wb') as f:
-      pickle.dump(lib, f)
+    def view(self):
+        '''View the book names and their corresponding bookmark.'''
 
-    print(f"‘{bk_nm}’: {old_pg} →",
-          self.__textcolor__(new_pg, 5))
-  
-  def view(self):
-    '''View the book names and their corresponding bookmark.'''
+        with open(self.index, 'rb') as f:
+            lib = pickle.load(f)
 
-    with open(self.index, 'rb') as f:
-      lib = pickle.load(f)
+        # For efficient use of screen space, the length of NAME and LOCATION
+        # (the names of the table columns) must be adjusted to the length of the
+        # contents.  The variables mbl and mll are sought for NAME and LOCATION
+        # respectively.
+        mbl = max([len(x) for _, x, _ in lib] + [4])
+        mll = max([len(x) for _, _, x in lib] + [8])
 
-    # For efficient use of screen space, the length of NAME and LOCATION
-    # (the names of the table columns) must be adjusted to the length of the
-    # contents.  The variables mbl and mll are sought for NAME and LOCATION
-    # respectively.
-    mbl = max([len(x) for _, x, _ in lib] + [4])
-    mll = max([len(x) for _, _, x in lib] + [8])
+        # The tables are printed using U+2500 and above.
+        print(f"╭─────┬─{'─'  * mbl}─┬─{     '─' * mll   }─╮")
+        print(f"│ {'  #'} │ {'Name':{mbl}} │ {'Location':{mll}} │")
+        print(f"├─────┼─{'─'  * mbl}─┼─{     '─' * mll   }─┤")
+        for no, bknm, pg in lib:
+          print(f"│ {no:3} │ {bknm:{mbl}} │ {pg:{mll}} │") 
+        print(f"╰─────┴─{'─'  * mbl}─┴─{     '─' * mll   }─╯")
 
-    # The tables are printed using U+2500 and above.
-    print(f"┌─────┬─{'─'  * mbl}─┬─{     '─' * mll   }─┐")
-    print(f"│ {'  #'} │ {'Name':{mbl}} │ {'Location':{mll}} │")
-    print(f"├─────┼─{'─'  * mbl}─┼─{     '─' * mll   }─┤")
-    for no, bknm, pg in lib:
-      print(f"│ {no:3} │ {bknm:{mbl}} │ {pg:{mll}} │") 
-    print(f"└─────┴─{'─'  * mbl}─┴─{     '─' * mll   }─┘")
+    def remove(self, bkn: str):
+        '''Remove the specified index.'''
 
-  def remove(self, bkn: str):
-    '''Remove the specified index.'''
+        try: bkn = int(bkn)
+        except ValueError:
+            self.__show_error__(f"Are you sure ‘{bkn}’ is an integer?")
 
-    try: bkn = int(bkn)
-    except ValueError:
-      self.__show_error__(f"Are you sure ‘{bkn}’ is an integer?")
+        with open(self.index, 'rb') as f:
+            lib = pickle.load(f)
 
-    with open(self.index, 'rb') as f:
-      lib = pickle.load(f)
+        for i in range(len(lib)):
+            if lib[i][0] == bkn:
+                bk_nm = lib.pop(i)[1]  # To display the removed bookmark
+                break
+        else:
+            self.__show_error__("It seems you don’t have such a bookmark.")
+            return
+        
+        with open(self.index, 'wb') as f:
+            pickle.dump(lib, f)
 
-    for i in range(len(lib)):
-      if lib[i][0] == bkn:
-        bk_nm = lib.pop(i)[1]  # To display the removed bookmark
-        break
-    else:
-      self.__show_error__("It seems you don’t have such a bookmark.")
-      return
+        print(self.__textcolor__("Removed:", 2),
+              f"‘{bk_nm}’")
+
+
+class Build(Library):
+    '''A set of methods for user interactions, input parsing, output
+    formatting, and the likes.'''
+
+    def __init__(self, argv: list[str]):
+        self.args = argv[1:]
+        self.verbs = {
+          # Long-form verbs
+             "add": self.add,
+          "update": self.update,
+            "view": self.view,
+          "remove": self.remove,
+            "help": self.help,
+          # Short-form verbs
+            'a': self.add,
+            'u': self.update,
+            'v': self.view,
+            'r': self.remove,
+            'h': self.help
+        }
+
+      self.home = "/home/ali"
+      self.index = f"{self.home}/.bkmk/index.bin"
+      if not os.path.exists(f"{self.home}/.bkmk"):
+          os.mkdir(f"{self.home}/.bkmk")    
+
+    def help(self):
+        '''Present help to the user.'''
+
+        print(
+          "The following verbs are valid:\n",
+          "• add <book name> <page number>         Add a bookmark\n",
+          "• update <book name> <new page number>  Update a bookmark\n",
+          "• view                                  View your bookmarks\n",
+          "• remove <book name>                    Remove a bookmark\n",
+          "• help                                  Display this message"
+          )
     
-    with open(self.index, 'wb') as f:
-      pickle.dump(lib, f)
+    def parse(self):
+        '''Parse the input and run the corresponding functions.'''
 
-    print(self.__textcolor__("Removed:", 2),
-          f"‘{bk_nm}’")
-
-
-class Run(BkMk):
-  '''A set of methods for user interactions, input parsing, output
-  formatting, and the likes.'''
-
-  def __init__(self, argv: list[str]):
-    self.args = argv[1:]
-    self.verbs = {
-      # Long-form verbs
-         "add": self.add,
-      "update": self.update,
-        "view": self.view,
-      "remove": self.remove,
-        "help": self.help,
-      # Short-form verbs
-        'a': self.add,
-        'u': self.update,
-        'v': self.view,
-        'r': self.remove,
-        'h': self.help
-    }
-
-    self.home = "/home/ali"
-    self.index = f"{self.home}/.bkmk/index.bin"
-    if not os.path.exists(f"{self.home}/.bkmk"):
-      os.mkdir(f"{self.home}/.bkmk")    
-
-  def help(self):
-    '''Present help to the user.'''
-
-    print(
-      "The following verbs are valid:\n",
-      "• add <book name> <page number>         Add a bookmark\n",
-      "• update <book name> <new page number>  Update a bookmark\n",
-      "• view                                  View your bookmarks\n",
-      "• remove <book name>                    Remove a bookmark\n",
-      "• help                                  Display this message"
-      )
-  
-  def parse(self):
-    '''Parse the input and run the corresponding functions.'''
-
-    try:
-      self.verbs[self.args[0]](*self.args[1:])
-    except KeyError:
-      self.__show_error__(f"‘{self.args[0]}’ is a strange verb."
-        "  Type ‘help’ for help.")
-    except IndexError:
-      self.view()
-    except TypeError: 
-      self.__show_error__("Something’s missing."
-        "  You could type ‘help’ and read up on the verb.")
+        try:
+            self.verbs[self.args[0]](*self.args[1:])
+        except KeyError:
+            self.__show_error__(f"‘{self.args[0]}’ is a strange verb."
+              "  Type ‘help’ for help.")
+        except IndexError:
+            self.view()
+        except TypeError: 
+            self.__show_error__("Something’s missing."
+              "  You could type ‘help’ and read up on the verb.")
 
 
 if __name__ == "__main__":
-  Run(argv).parse()
+    Build(argv).parse()
