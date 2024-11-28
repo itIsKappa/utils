@@ -48,3 +48,12 @@ The rule is hard and fast.  There are no exceptions.
 
 * `fltree -f <filename>` \
   This will read *filename* and the result is outputted to standard output.
+
+## Building
+* `cabal build`\
+  This will compile and build `fltree`.
+
+* `cabal run`\
+  This will compile and build, if not already, and subsequently run the program.
+  The command-line arguments may be provided like so: `cabal run -- -` or `cabal
+  run -- -f <filename>`.
