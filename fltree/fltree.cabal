@@ -1,6 +1,6 @@
 cabal-version:      3.0
 name:               fltree
-version:            0.1.0.0
+version:            0.1.1
 synopsis:           Pretty-printing n-ary rooted trees
 -- description:
 license:            MIT
