@@ -42,7 +42,7 @@ evalArgs config (a1:a2:as) =
                                          "ascii"   -> ASCII
                                          "unicode" -> Unicode
                                          "round"   -> Round
-                                         -         -> Unicode}
+                                         _         -> Unicode}
                     in  evalArgs config' as
 
     ["-f", file] -> let config' = config
