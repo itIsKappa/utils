@@ -40,6 +40,30 @@ will produce
 
 The rule is hard and fast.  There are no exceptions.
 
+## Wood Types
+*Wood types* refer to the set of box-drawing characters used for
+pretty-printing.  There are three types:
+* `ASCII` \
+  ASCII characters may look rather dull and not very legible.  However this is
+  the most compatible, and is guaranteed to work anywhere.
+
+* `Unicode` \
+  Unicode characters are legible and look nice.  They do not have abrupt breaks
+  between characters (unless the typeface chosen does or the line height is
+  greater) unlike ASCII characters.  It is, however, not guaranteed work
+  everywhere, since some systems may not have typefaces having box-drawing
+  characters or may not (unfortunately) support UTF-8 characters.
+
+* `Round` \
+  Round characters are like `Unicode`, except that the corners are rounded.  A
+  system supporting the usual box-drawing characters may not necessarily support
+  rounded box-drawing characters — this does not hold the other way around,
+  usually.
+
+The wood type is specified by the `-d` option, as like `-d Round`.  `Unicode` is
+the default wood type.  If an inexistent wood type is specified, the wood type
+defaults to `Unicode`. 
+
 ## Manual
 * `fltree -` \
   This will prompt the user to enter the input via standard input.  The input is
