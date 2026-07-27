@@ -1,4 +1,5 @@
 #! /bin/bash
+shopt -s extglob
 
 #########################################################
 
@@ -39,19 +40,13 @@ cmd=''
 options=1
 
 while [ $options -eq 1 ]; do
-  if [ $1 = '-u' ] || [ $1 = '--user' ]; then
-    user=$2
-    shift; shift
-    options=0
-  elif [ $1 = '-h' ] || [ $1 = '--help' ]; then
-    display_help
-  else options=0
-  fi
-done
-
-while [ $# -gt 0 ]; do
-  cmd="$cmd$1 "
+  case $1 in
+    '-u' | '--user') user=$2      ;;
+    '-h' | '--help') display_help ;;
+    *              ) options=0    ;;
+  esac
   shift
 done
 
+cmd="$(echo $@)"
 su $user -c "$cmd"
